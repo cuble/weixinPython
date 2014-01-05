@@ -27,7 +27,7 @@ RESPONSE_TEXT_TEMPLATE = '''
 
 
 class Handler( BaseHTTPRequestHandler ):
-	TOKEN = 'thisismytoken'
+	TOKEN = 'thisismytoken'   #make it invisible later
 
 	def do_GET(self):
 		print threading.currentThread().getName()
@@ -35,8 +35,7 @@ class Handler( BaseHTTPRequestHandler ):
 		self.getParams = self.requestGet()
 		print self.getParams
 		text = 'empty'
-		if self.getParams:
-			print self.isWeixinSignature()
+		if self.getParams and self.isWeixinSignature():
 			text = self.getParams['echostr']
 		self.sendResponse(text)
 		return
@@ -77,7 +76,10 @@ class Handler( BaseHTTPRequestHandler ):
 		responseDict['TO_USER'] = dataDict['FromUserName']
 		responseDict['FROM_USER'] = dataDict['ToUserName']
 		responseDict['TIME_STEMP'] = str(timeHelper.unixTimeStamp())
-		text = u'你好，系统尚在测试中……您刚才说的是：' + dataDict['Content']
+		if dataDict['MsgType'] == 'event':
+			text = u'欢迎您关注云称客户端\n我为您提供记录和查询体重信息的服务'
+		else:
+			text = u'你好，系统尚在测试中……您刚才说的是：' + dataDict['Content']
 		responseDict['RESPONSE_CONTENT'] = text.encode('UTF-8')
 		return responseDict
 
@@ -107,12 +109,11 @@ class Handler( BaseHTTPRequestHandler ):
 		signature = self.getParams['signature']
 		timestamp = self.getParams['timestamp']
 		nonce = self.getParams['nonce']
-		echostr = self.getParams['echostr']
+		#echostr = self.getParams['echostr']
 		wishSignature = self.localSignature(self.TOKEN, timestamp, nonce)
 		print signature, wishSignature
-		if signature == wishSignature:
-			return True
-		return False
+		return signature == wishSignature
+		
 
 		
 		
