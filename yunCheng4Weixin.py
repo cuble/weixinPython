@@ -14,8 +14,14 @@ RESPONSE_TEXT_TEMPLATE = '''
 '''  
 
 class msgHandler:
-    MSG_WELCOME = ""
-    MSG_HELP = ""
+    MSG_WELCOME = u'欢迎您关注云称客户端\n我为您提供记录和查询体重信息的服务\n了解详情请发送“帮助”或“？”'
+    MSG_HELP = '''
+本系统功能如下：
+  发送“记录体重 您的体重”或“jltz 您的体重”，本系统将记录您的体重数据
+  发送“记录身高 您的身高”或“jlsg 您的身高”， 本系统将记录您的身高
+  发送“查询”或“cx”，本系统将回复您最近一次的体重和身高数据
+  您还可以发送发送“查询一周”或“cxyz”，“查询一月”或“cxyy”
+'''
     def __init__(self, data):
         self.data = data
         
@@ -49,9 +55,9 @@ class msgHandler:
         responseDict['FROM_USER'] = dataDict['ToUserName']
         responseDict['TIME_STEMP'] = str(timeHelper.unixTimeStamp())
         if dataDict['MsgType'] == 'event':
-            text = u'欢迎您关注云称客户端\n我为您提供记录和查询体重信息的服务'
+            text = self.MSG_WELCOME
         else:
-            text = u'你好，系统尚在测试中……您刚才说的是：' + dataDict['Content']
+            text = self.MSG_HELP
         responseDict['RESPONSE_CONTENT'] = text.encode('UTF-8')
         return responseDict
 
