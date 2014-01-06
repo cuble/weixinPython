@@ -1,19 +1,20 @@
 # -*- coding: UTF-8 -*-
 
-import posixpath
-import urllib
-import shutil
-import os
-from os  import path
+#import posixpath
+#import urllib
+#import shutil
+#import os
+#from os  import path
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-import socket
+#import socket
 from SocketServer import ThreadingMixIn
 import threading
-import sys
+#import sys
 import hashlib
 import timeHelper
 import cgi
 import xml.etree.ElementTree as ET
+import yunCheng4Weixin
 
 RESPONSE_TEXT_TEMPLATE = '''
 <xml>
@@ -32,7 +33,7 @@ class Handler( BaseHTTPRequestHandler ):
 	def do_GET(self):
 		print threading.currentThread().getName()
 		print self.path
-		text = 'empty'
+		text = 'Constructing...'
 		if self.verifyWeixinHeader():
 			text = self.receivedParams['echostr']
 		self.sendResponse(text)
@@ -62,7 +63,8 @@ class Handler( BaseHTTPRequestHandler ):
 		responseDict = self.responseDictFromInputDict(dataDict)
 		text = self.responseXML(responseDict)
 		print text
-		self.wfile.write(text)
+		worker = yunCheng4Weixin.msgHandler(data)
+		self.wfile.write(worker.response())
 
 	def xmlToDict(self, xmlText):
 		xmlDict = {}
