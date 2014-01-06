@@ -32,15 +32,15 @@ class Handler( BaseHTTPRequestHandler ):
 	def do_GET(self):
 		print threading.currentThread().getName()
 		print self.path
-		self.getParams = self.requestGet()
-		print self.getParams
 		text = 'empty'
-		if self.getParams and self.isWeixinSignature():
-			text = self.getParams['echostr']
+		if self.verifyWeixinHeader():
+			text = self.receivedParams['echostr']
 		self.sendResponse(text)
 		return
 
 	def do_POST(self):
+		if not self.verifyWeixinHeader():
+			return
 		form = cgi.FieldStorage(
 			fp=self.rfile,
 			headers=self.headers,
@@ -89,7 +89,12 @@ class Handler( BaseHTTPRequestHandler ):
 			parameter = '{%s}' % key
 			text = text.replace(parameter, value)
 		return text
-		
+	
+	def verifyWeixinHeader(self):
+		self.receivedParams = self.requestGet()
+		print self.receivedParams
+		return (self.receivedParams and self.isWeixinSignature())
+
 	def requestGet(self):
 		paramDict = {}
 		pathParts = self.path.split('?', 1)
@@ -106,10 +111,10 @@ class Handler( BaseHTTPRequestHandler ):
 
 
 	def isWeixinSignature(self):
-		signature = self.getParams['signature']
-		timestamp = self.getParams['timestamp']
-		nonce = self.getParams['nonce']
-		#echostr = self.getParams['echostr']
+		signature = self.receivedParams['signature']
+		timestamp = self.receivedParams['timestamp']
+		nonce = self.receivedParams['nonce']
+		#echostr = self.receivedParams['echostr']
 		wishSignature = self.localSignature(self.TOKEN, timestamp, nonce)
 		print signature, wishSignature
 		return signature == wishSignature
