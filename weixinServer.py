@@ -5,9 +5,13 @@ from SocketServer import ThreadingMixIn
 import threading
 import hashlib
 import cgi
+
 import yunCheng4Weixin
 
-
+def update_function_module():
+	import os
+	os.system('git pull')
+	reload(yunCheng4Weixin)
 
 class Handler( BaseHTTPRequestHandler ):
 	TOKEN = 'thisismytoken'   #make it invisible later
@@ -15,9 +19,13 @@ class Handler( BaseHTTPRequestHandler ):
 	def do_GET(self):
 		print threading.currentThread().getName()
 		print self.path
-		text = 'Constructing...'
+		text = u'Constructing...\n'
 		if self.verifyWeixinHeader():
-			text = self.receivedParams['echostr']
+			if self.path.startswith('/update?'):
+				update_function_module()
+				text = 'updated'
+			else:
+				text = self.receivedParams['echostr']
 		self.sendResponse(text)
 		return
 
@@ -25,11 +33,11 @@ class Handler( BaseHTTPRequestHandler ):
 		if not self.verifyWeixinHeader():
 			return
 		form = cgi.FieldStorage(
-			fp=self.rfile,
-			headers=self.headers,
-			environ={'REQUEST_METHOD':'POST',
-					 'CONTENT_TYPE':self.headers['Content-Type'],
-					 })
+ 			fp=self.rfile,
+ 			headers=self.headers,
+ 			environ={'REQUEST_METHOD':'POST',
+ 					 'CONTENT_TYPE':self.headers['Content-Type'],
+ 					 })
 		if form.file:      
 			data = form.file.read()   
 			print data          

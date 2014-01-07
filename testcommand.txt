@@ -1,0 +1,4 @@
+curl -H "Accept: application/xml" -H "Content-Type: application/xml" -X GET 'http://127.0.0.1/?signature=7feb671f04be4931efd29ed5cc0819e3df65687f&timestamp=222&nonce=333&echostr=@@@@@@@@---'
+curl -H "Accept: application/xml" -H "Content-Type: application/xml" -X GET 'http://127.0.0.1/update?signature=7feb671f04be4931efd29ed5cc0819e3df65687f&timestamp=222&nonce=333&echostr=@@@@@@@@---'
+
+curl -H "Content-Type: application/xml" -T testxml -X POST 'http://127.0.0.1/?signature=7feb671f04be4931efd29ed5cc0819e3df65687f&timestamp=222&nonce=333'
