@@ -8,9 +8,10 @@ import cgi
 
 import yunCheng4Weixin
 
-def update_function_module():
-	import os
-	os.system('git pull')
+def update_function_module(mode='remote'):
+	if mode == 'remote':
+		import os
+		os.system('git pull')
 	reload(yunCheng4Weixin)
 
 class Handler( BaseHTTPRequestHandler ):
@@ -24,6 +25,9 @@ class Handler( BaseHTTPRequestHandler ):
 			if self.path.startswith('/update?'):
 				update_function_module()
 				text = 'updated'
+			elif self.path.startswith('/updatelocal?'):
+				update_function_module('local')
+				text = 'updated'				
 			else:
 				text = self.receivedParams['echostr']
 		self.sendResponse(text)
