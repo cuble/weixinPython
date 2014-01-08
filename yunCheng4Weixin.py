@@ -87,8 +87,13 @@ class txtmsgHandler:
         for i in xrange(len(self.req)):
             if self.req[i].isdigit():
                 self.command = self.req[:i].strip()
-                self.data = int(self.req[i:])
+                print self.command
+                if not self.command.startswith('cx'):
+                    self.data = int(self.req[i:])
                 break
+        if self.command == '': 
+            self.command = self.req
+            self.data = ''
         print self.command, self.data
 
     def _handle_req(self):
@@ -98,10 +103,10 @@ class txtmsgHandler:
                 self._tz_handle()
             elif self.command == 'sg' or self.command == u'身高':
                 self._sg_handle()  
-            elif self.command == 'cx' or self.command == '查询':
+            elif self.command == 'cx' or self.command == u'查询':
                 self._cx_handle()
-        except:
-            pass
+        except Exception as inst:
+            print inst
             
     def _get_success_response(self):
         import random
