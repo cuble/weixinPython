@@ -86,7 +86,7 @@ class txtmsgHandler:
         self.command = ''
         for i in xrange(len(self.req)):
             if self.req[i].isdigit():
-                self.command = self.req[:i].strip()
+                self.command = self.req[:i].strip().lower()
                 print self.command
                 if not self.command.startswith('cx'):
                     self.data = int(self.req[i:])
