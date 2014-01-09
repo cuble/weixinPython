@@ -87,14 +87,16 @@ class txtmsgHandler:
         for i in xrange(len(self.req)):
             if self.req[i].isdigit():
                 self.command = self.req[:i].strip()
-                print self.command
                 if not self.command.startswith('cx'):
                     self.data = int(self.req[i:])
                 break
         if self.command == '': 
             self.command = self.req
             self.data = ''
-        print self.command, self.data
+        try:
+            print self.command, self.data
+        except:
+            pass
 
     def _handle_req(self):
         try:
