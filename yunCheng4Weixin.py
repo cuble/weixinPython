@@ -77,7 +77,7 @@ class txtmsgHandler:
     MSG_IMPLEMENTING = u'功能实现中，请明天再试'
     MSG_SUCCESS = [u'存储完成', u'我存好了，随时来查哦',u'搞定，收工']
     def __init__(self, user, reqMsg):
-        self.req = reqMsg
+        self.req = reqMsg.lower()
         self.db = yunchengdb(user)
         self.response = self.MSG_HELP
         self._handle_req()
@@ -86,7 +86,7 @@ class txtmsgHandler:
         self.command = ''
         for i in xrange(len(self.req)):
             if self.req[i].isdigit():
-                self.command = self.req[:i].strip().lower()
+                self.command = self.req[:i].strip()
                 print self.command
                 if not self.command.startswith('cx'):
                     self.data = int(self.req[i:])
