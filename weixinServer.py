@@ -121,6 +121,13 @@ if __name__ == '__main__':
 	serverPort = 80
 	server_address = ('', serverPort) #('localhost', 8181)
 	#server = HTTPServer( server_address, Handler)
+	try:
+		f = open('TOKENFILE')
+		token = f.read().strip()
+		Handler.TOKEN = token
+	except Exception as inst:
+		print inst
+		
 	server = ThreadedHTTPServer( server_address, Handler)
 	print 'Download server is running at http://127.0.0.1:' + str(serverPort)
 	print 'Starting server, use <Ctrl-C> to stop'
