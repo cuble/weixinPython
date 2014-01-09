@@ -99,11 +99,11 @@ class txtmsgHandler:
     def _handle_req(self):
         try:
             self._get_command()
-            if self.command == 'tz' or self.command == u'体重':
+            if self.command == 'tz' or self.command == u'体重' or self.command == '体重':
                 self._tz_handle()
-            elif self.command == 'sg' or self.command == u'身高':
+            elif self.command == 'sg' or self.command == u'身高' or self.command == '身高':
                 self._sg_handle()  
-            elif self.command == 'cx' or self.command == u'查询':
+            elif self.command == 'cx' or self.command == u'查询' or self.command == '查询':
                 self._cx_handle()
         except Exception as inst:
             print inst
