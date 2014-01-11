@@ -66,47 +66,81 @@ class eventHandler:
             self.response = self.MSG_WELCOME
 
 class txtmsgHandler:
-    MSG_HELP = u'''
-本系统接受的命令有：
+    MSG_HELP = u'''本系统接受的命令有：
   -sg您的身高（厘米）,如sg165
   -tz您的体重（公斤），如tz50
+  -也可以输入：身高165，体重50
   -“查询”或“cx”，查询您最近一次的体重和身高数据
   -“查询一周”或“cxyz”，
   -“查询一月”或“cxyy”
 '''
     MSG_IMPLEMENTING = u'功能实现中，请明天再试'
     MSG_SUCCESS = [u'存储完成', u'我存好了，随时来查哦',u'搞定，收工']
+    MSG_ERROR_TZ_NULL = u'体重数据不对，命令格式是：tz数字'
+    MSG_ERROR_SG_NULL = u'身高数据不对，命令格式是：sg数字'
     def __init__(self, user, reqMsg):
-        self.req = reqMsg.lower()
+        self.req = reqMsg.lower().replace(u'，',',')
         self.db = yunchengdb(user)
         self.response = self.MSG_HELP
         self._handle_req()
 
-    def _get_command(self):
-        self.command = ''
-        for i in xrange(len(self.req)):
-            if self.req[i].isdigit():
-                self.command = self.req[:i].strip()
-                if not self.command.startswith('cx'):
-                    self.data = int(self.req[i:])
+    def _decode_command(self, cmd):
+        decodedResult = {}
+        for i in xrange(len(cmd)):
+            if cmd[i].isdigit():
+                decodedResult[cmd[:i].strip()] = float(cmd[i:])
                 break
-        if self.command == '': 
-            self.command = self.req
-            self.data = ''
+        if not decodedResult:
+            self.command[cmd] = ''
+        else:
+            self.command.update(decodedResult)
+
+
+    def _get_command(self):
+        self.command = {}
+        cmds = self.req.split(',')
+        for cmd in cmds:
+            self._decode_command(cmd)
         try:
-            print self.command, self.data
+            print self.command
         except:
             pass
+    
+    def _verify_command(self):
+        data = {}
+        for cmd in self.command:
+            if cmd == 'tz' or cmd == u'体重' or cmd == '体重':
+                if 'TiZhong' in data:
+                    self.response = u"查询命令不能和存储命令同时使用"
+                    return False
+                data.update({'TiZhong':self.command[cmd]})
+            elif cmd == 'sg' or cmd == u'身高' or cmd == '身高':
+                if 'ShenGao' in data:
+                    self.reponse = u"查询命令不能和存储命令同时使用"
+                    return False
+                data.update({'ShenGao':self.command[cmd]})
+            elif cmd == 'cx' or cmd == u'查询' or cmd == '查询':
+                if 'ShenGao' in data or 'TiZhong' in data:
+                    self.response = u"查询命令不能和存储命令同时使用"
+                    return False
+                data = {'TiZhong': '', 'ShenGao': ''}
+                self._cx_handle()
+                return True
+            else:
+                print 'unrecognized command:{}'.format(cmd)
+                self.response = u"不支持命令{} \n".format(cmd)
+                self.response+= self.MSG_HELP
+                return False
+        self.db.store_dict(data)
+        self.response = self._get_success_response() 
+        return True
+        
 
     def _handle_req(self):
         try:
             self._get_command()
-            if self.command == 'tz' or self.command == u'体重' or self.command == '体重':
-                self._tz_handle()
-            elif self.command == 'sg' or self.command == u'身高' or self.command == '身高':
-                self._sg_handle()  
-            elif self.command == 'cx' or self.command == u'查询' or self.command == '查询':
-                self._cx_handle()
+            if not self._verify_command():
+                return
         except Exception as inst:
             print inst
             
@@ -114,15 +148,21 @@ class txtmsgHandler:
         import random
         return self.MSG_SUCCESS[random.randint(0,len(self.MSG_SUCCESS)-1)]
             
-    def _tz_handle(self):
-        data = {'TiZhong':self.data}
-        self.db.store_dict(data)
-        self.response = self._get_success_response() 
+    def _tz_handle(self, cmd):
+        if self.command[cmd]:
+            data = {'TiZhong':self.command[cmd]}
+            self.db.store_dict(data)
+            self.response = self._get_success_response() 
+        else:
+            self.response = self.MSG_ERROR_TZ_NULL
         
-    def _sg_handle(self):
-        data = {'ShenGao':self.data}
-        self.db.store_dict(data)
-        self.response = self._get_success_response() 
+    def _sg_handle(self, cmd):
+        if self.command[cmd]:
+            data = {'ShenGao':self.command[cmd]}
+            self.db.store_dict(data)
+            self.response = self._get_success_response()
+        else:
+            self.response = self.MSG_ERROR_SG_NULL 
         
     def _cx_handle(self):
         data = {'TiZhong': '', 'ShenGao': ''}
@@ -141,7 +181,6 @@ import sqlite3
 class yunchengdb:
     def __init__(self, dbName):
         dbPath = os.path.join(os.getcwd(), 'DB')
-        print dbPath
         if not os.path.isdir(dbPath):
             os.mkdir(dbPath) 
         name = os.path.join(dbPath, dbName+'.db')
