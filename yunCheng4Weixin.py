@@ -168,12 +168,12 @@ class txtmsgHandler:
         data = {'TiZhong': '', 'ShenGao': ''}
         self.db.query_dict(data)
         print data
-        response = ''
+        response = u'您在{}的记录是：'.format(data['DateTime'])
         if data['ShenGao']:
-            response += u'身高：{}厘米'.format(data['ShenGao'])
+            response += u'身高{}厘米'.format(data['ShenGao'])
         if data['TiZhong']:
             if response: response += ','
-            response += u'体重：{}公斤'.format(data['TiZhong'])
+            response += u'体重{}公斤'.format(data['TiZhong'])
         self.response = response
 
 import os
@@ -194,6 +194,10 @@ class yunchengdb:
         self.c = self.conn.cursor()
         if createNeeded:
             self._create_db()  
+            
+    def __del__(self):
+        self.conn.close()
+        
     
     def store_dict(self, dictData):
         sg = tz = ''
@@ -202,8 +206,9 @@ class yunchengdb:
             sg = dictData['ShenGao']
         if 'TiZhong' in dictData:
             tz = dictData['TiZhong']
-        print '''INSERT INTO shencai (timestamp, ShenGao, TiZhong) VALUES({},'{}','{}')'''.format(111,sg,tz)
-        self.c.execute('''INSERT INTO shencai (timestamp, ShenGao, TiZhong) VALUES({},'{}','{}')'''.format(111,sg,tz))
+        timestamp = timeHelper.unixTimeStamp()
+        print '''INSERT INTO shencai (timestamp, ShenGao, TiZhong) VALUES({},'{}','{}')'''.format(timestamp,sg,tz)
+        self.c.execute('''INSERT INTO shencai (timestamp, ShenGao, TiZhong) VALUES({},'{}','{}')'''.format(timestamp,sg,tz))
         self.conn.commit()
     
     def query_dict(self, dictData):
@@ -212,6 +217,7 @@ class yunchengdb:
         print id, timestamp,sg,tz
         dictData['ShenGao'] = sg
         dictData['TiZhong'] = tz
+        dictData['DateTime'] = timeHelper.timestamp2datetime(timestamp)
 
     
     def _create_db(self):
@@ -219,3 +225,6 @@ class yunchengdb:
              (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, timestamp INTEGER, ShenGao text, TiZhong text)''')
         self.c.execute('''CREATE INDEX dateIndex ON shencai(timestamp)''')
         self.conn.commit()
+        
+    def close_db(self):
+        self.conn.close()
