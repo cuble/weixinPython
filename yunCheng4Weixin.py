@@ -91,7 +91,7 @@ class txtmsgHandler:
                 decodedResult[cmd[:i].strip()] = float(cmd[i:])
                 break
         if not decodedResult:
-            self.command[cmd] = ''
+            self.command[cmd.strip()] = ''
         else:
             self.command.update(decodedResult)
 
@@ -100,7 +100,7 @@ class txtmsgHandler:
         self.command = {}
         cmds = self.req.split(',')
         for cmd in cmds:
-            self._decode_command(cmd)
+            if cmd: self._decode_command(cmd)
         try:
             print self.command
         except:
